@@ -1,12 +1,25 @@
 {
-  "name": "mason",
+  "name": "@mort/mason",
   "version": "0.1.0",
   "description": "MASON parser",
+  "keywords": [
+    "mason",
+    "json",
+    "parser"
+  ],
+  "homepage": "https://github.com/mortie/mason-js#readme",
+  "bugs": {
+    "url": "https://github.com/mortie/mason-js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mortie/mason-js.git"
+  },
   "license": "ISC",
-  "author": "Martin Døum",
+  "author": "Martin Dørum",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make check"
   }
 }
