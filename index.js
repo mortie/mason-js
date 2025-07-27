@@ -314,11 +314,21 @@ function parseStringEscape(r) {
 	}
 
 	if (ch == 'u') {
-		return String.fromCodePoint(parseHex(r, 4));
+		const codepoint = parseHex(r, 4);
+		if (codepoint >= 0xd800 && codepoint <= 0xdfff) {
+			r.err("UTF-16 surrogate pair escapes are not allowed");
+		}
+
+		return String.fromCodePoint(codepoint);
 	}
 
 	if (ch == 'U') {
-		return String.fromCodePoint(parseHex(r, 6));
+		const codepoint = parseHex(r, 6);
+		if (codepoint >= 0xd800 && codepoint <= 0xdfff) {
+			r.err("UTF-16 surrogate pair escapes are not allowed");
+		}
+
+		return String.fromCodePoint(codepoint);
 	}
 
 	r.err("Unknown escape character: '" + ch + "'");
