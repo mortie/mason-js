@@ -557,10 +557,17 @@ function parseNumber(r) {
 		ch = r.peek();
 	}
 
-	let fractional = 0;
-	if (ch == '.') {
+	let fractional = "";
+	if (radix == 10 && ch == '.') {
+		fractional = ".";
 		r.consume();
-		fractional = parseInteger(r, radix);
+		r.expectRx(/[0-9]/);
+		while (true) {
+			fractional += r.get();
+			if (!r.peekMatches(/[0-9]/)) {
+				break;
+			}
+		}
 		ch = r.peek();
 	}
 
@@ -588,7 +595,7 @@ function parseNumber(r) {
 	// Therefore, we just produce a normalized string
 	// which is compatible with parseFloat,
 	// and use parseFloat to do the actual float parsing.
-	let normalizedString = `${sign}${integral}.${fractional}e${exponent}`;
+	let normalizedString = `${sign}${integral}${fractional}e${exponent}`;
 	return parseFloat(normalizedString);
 }
 
