@@ -563,8 +563,13 @@ function parseNumber(r) {
 		r.consume();
 		r.expectRx(/[0-9]/);
 		while (true) {
+			if (r.peek() == '\'') {
+				r.consume();
+				continue;
+			}
+
 			fractional += r.get();
-			if (!r.peekMatches(/[0-9]/)) {
+			if (!r.peekMatches(/[0-9']/)) {
 				break;
 			}
 		}
