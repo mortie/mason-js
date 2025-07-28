@@ -693,7 +693,8 @@ function parseArray(r) {
 		let hasSep = skipSep(r);
 		let ch = r.peek();
 		if (ch == ']') {
-			break;
+			r.consume();
+			return arr;
 		}
 
 		if (ch == null) {
@@ -704,10 +705,6 @@ function parseArray(r) {
 			r.err("Expected separator or ']', got: '" + ch + "'");
 		}
 	}
-
-	skipWhitespace(r);
-	r.skipCh(']');
-	return arr;
 }
 
 /**
@@ -727,7 +724,7 @@ function parseValue(r, topLevel = false) {
 		return parseObject(r);
 	} else if (ch == '"') {
 		return parseString(r);
-	} else if (ch == 'r') {
+	} else if (ch == 'r' && (r.peek2() == '"' || r.peek2() == '#')) {
 		return parseRawString(r);
 	} else if (/[0-9\+\-\.]/.test(ch)) {
 		return parseNumber(r);
