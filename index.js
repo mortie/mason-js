@@ -723,7 +723,15 @@ function parseValue(r, topLevel = false) {
 	} else if (ch == '{') {
 		return parseObject(r);
 	} else if (ch == '"') {
-		return parseString(r);
+		const str = parseString(r);
+		if (topLevel) {
+			skipWhitespace(r);
+			if (r.peek() == ':') {
+				return parseKeyValuePairsAfterKey(r, str);
+			}
+		}
+
+		return str;
 	} else if (ch == 'r' && (r.peek2() == '"' || r.peek2() == '#')) {
 		return parseRawString(r);
 	} else if (/[0-9\+\-\.]/.test(ch)) {
