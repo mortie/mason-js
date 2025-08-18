@@ -314,9 +314,24 @@ function parseStringEscape(r) {
 	}
 
 	if (ch == 'u') {
-		const codepoint = parseHex(r, 4);
-		if (codepoint >= 0xd800 && codepoint <= 0xdfff) {
-			r.err("UTF-16 surrogate pair escapes are not allowed");
+		let codepoint = parseHex(r, 4);
+		if (codepoint >= 0xd800 && codepoint <= 0xdbff) {
+			if (r.peek() != '\\' || r.peek2() != 'u') {
+				r.err("Unpaired UTF-16 surrogate pair");
+			}
+
+			r.consume();
+			r.consume();
+			const low = parseHex(r, 4);
+			if (low < 0xdc00 || low > 0xdfff) {
+				r.err("Unpaired UTF-16 surrogate pair");
+			}
+
+			codepoint = (codepoint - 0xd800) * 0x400;
+			codepoint += low - 0xDC00;
+			codepoint += 0x10000;
+		} else if (codepoint >= 0xdc00 && codepoint <= 0xdfff) {
+			r.err("Unexpected low UTF-16 surrogate pair");
 		}
 
 		return String.fromCodePoint(codepoint);
@@ -355,6 +370,10 @@ function parseString(r) {
 		if (ch == '\\') {
 			str += parseStringEscape(r);
 			continue;
+		}
+
+		if (ch.charCodeAt(0) < 0x20) {
+			r.err("Unexpected control character");
 		}
 
 		str += ch;
@@ -402,7 +421,10 @@ function parseBinaryString(r) {
 		let point = ch.codePointAt(0);
 		if (point > 127) {
 			r.err("Binary strings can only contain ASCII literals, got: '" + ch + "'");
+		} else if (point < 0x20) {
+			r.err("Unexpected control character");
 		}
+
 		arr.push(point);
 	}
 
