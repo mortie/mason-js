@@ -432,6 +432,34 @@ function parseBinaryString(r) {
 }
 
 /**
+ * @param {Reader} r
+ * @returns string
+ */
+function parseMultiLineString(r) {
+	r.skipCh('|');
+
+	let str = "";
+	while (true) {
+		while (true) {
+			let ch = r.get();
+			if (ch == '\n' || (ch == '\r' && r.peek2() == '\n')) {
+				break;
+			}
+
+			str += ch;
+		}
+
+		skipWhitespace(r);
+		if (r.peek() == '|') {
+			r.consume();
+			str += '\n';
+		} else {
+			return str;
+		}
+	}
+}
+
+/**
  * Raw String: 'r' hashes '"' rstring-char* '"' hashes
  * @param {Reader} r
  * @returns string
@@ -649,10 +677,15 @@ function parseKeyValuePairsAfterKey(r, key) {
 	while (true) {
 		r.skipCh(':');
 		skipWhitespace(r);
+
+		// If the next value is a multi-line string,
+		// always assume that we have had a separator
+		let hasSep = r.peek() == '|';
+
 		let val = parseValue(r);
 		obj[key] = val;
 
-		let hasSep = skipSep(r);
+		hasSep = skipSep(r) || hasSep;
 		skipWhitespace(r);
 		let ch = r.peek();
 		if (ch == '}' || ch == null) {
@@ -710,9 +743,16 @@ function parseArray(r) {
 
 	let arr = [];
 	while (true) {
+		skipWhitespace(r);
+
+		// If the next value is a multi-line string,
+		// always assume that we have had a separator
+		let hasSep = r.peek() == '|';
+
 		let val = parseValue(r);
 		arr.push(val);
-		let hasSep = skipSep(r);
+
+		hasSep = skipSep(r) || hasSep;
 		let ch = r.peek();
 		if (ch == ']') {
 			r.consume();
@@ -760,6 +800,8 @@ function parseValue(r, topLevel = false) {
 		return parseNumber(r);
 	} else if (ch == 'b' && r.peek2() == '"') {
 		return parseBinaryString(r);
+	} else if (ch == '|') {
+		return parseMultiLineString(r);
 	}
 
 	let ident = parseIdentifier(r);
