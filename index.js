@@ -442,7 +442,7 @@ function parseMultiLineString(r) {
 	while (true) {
 		while (true) {
 			let ch = r.get();
-			if (ch == '\n' || (ch == '\r' && r.peek2() == '\n')) {
+			if (ch == null || ch == '\n' || (ch == '\r' && r.peek2() == '\n')) {
 				break;
 			}
 
